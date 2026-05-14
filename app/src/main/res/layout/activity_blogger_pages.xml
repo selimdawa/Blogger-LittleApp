@@ -11,7 +11,7 @@
 
         <include
             android:id="@+id/toolbar"
-            layout="@layout/toolbar_blogger_search" />
+            layout="@layout/toolbar_name" />
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -28,14 +28,6 @@
                     android:layout_height="match_parent"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_blogger" />
-
-                <Button
-                    android:id="@+id/loadMore"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/white"
-                    android:text="@string/load_more"
-                    android:textColor="@color/black" />
 
             </LinearLayout>
 
