@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt")
+    alias(libs.plugins.google.ksp)
 }
 
 android {
@@ -59,10 +59,8 @@ dependencies {
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.cardview)
     //Image
-    implementation(libs.circleimageview)                //Circle Image
     implementation(libs.glide)                          //Glide Image
-    //noinspection KaptUsageInsteadOfKsp
-    kapt(libs.compiler)                                 //Glide Compiler
+    ksp(libs.glide.ksp)                                 //Glide Compiler
     //Other's
     implementation(libs.jsoup)
     implementation(libs.volley)
