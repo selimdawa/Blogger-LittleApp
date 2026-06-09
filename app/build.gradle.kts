@@ -7,15 +7,13 @@ plugins {
 android {
     namespace = "com.littleapp.blogger"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+       version = release(37)
     }
 
     defaultConfig {
         applicationId = "com.littleapp.blogger"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
