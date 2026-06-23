@@ -23,7 +23,9 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
-    private var binding: ActivityMainBinding? = null
+    private var _binding: ActivityMainBinding? = null
+    private val binding get() = _binding!!
+
     private var url = DATA.EMPTY
     private var nextToken = DATA.EMPTY
     private var isSearch = false
@@ -35,17 +37,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         THEME.setThemeOfApp(context)
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding!!.root
-        setContentView(view)
 
-        binding!!.toolbar.nameSpace.text = getString(R.string.blogger_name)
-        binding!!.toolbar.close.setOnClickListener { onBackPressed() }
-        binding!!.toolbar.pages.setOnClickListener { VOID.Intent1(context, CLASS.BLOGGER_PAGES) }
+        _binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        binding!!.toolbar.search.setOnClickListener {
-            binding!!.toolbar.toolbar.visibility = View.GONE
-            binding!!.toolbar.toolbarSearch.visibility = View.VISIBLE
+        binding.toolbar.nameSpace.text = getString(R.string.blogger_name)
+        binding.toolbar.close.setOnClickListener { onBackPressed() }
+        binding.toolbar.pages.setOnClickListener { VOID.Intent1(context, CLASS.BLOGGER_PAGES) }
+
+        binding.toolbar.search.setOnClickListener {
+            binding.toolbar.toolbar.visibility = View.GONE
+            binding.toolbar.toolbarSearch.visibility = View.VISIBLE
             DATA.searchStatus = true
         }
 
@@ -55,20 +57,21 @@ class MainActivity : AppCompatActivity() {
         posts!!.clear()
         loadPosts()
 
-        binding!!.loadMore.setOnClickListener {
-            val query = binding!!.toolbar.textSearch.text.toString().trim { it <= ' ' }
+        binding.loadMore.setOnClickListener {
+            val query = binding.toolbar.textSearch.text.toString().trim { it <= ' ' }
             if (TextUtils.isEmpty(query)) {
                 loadPosts()
             } else {
                 searchPosts(query)
             }
         }
-        binding!!.toolbar.postSearch.setOnClickListener {
+
+        binding.toolbar.postSearch.setOnClickListener {
             nextToken = DATA.EMPTY
             url = DATA.EMPTY
             posts = ArrayList()
             posts!!.clear()
-            val query = binding!!.toolbar.textSearch.text.toString().trim { it <= ' ' }
+            val query = binding.toolbar.textSearch.text.toString().trim { it <= ' ' }
             if (TextUtils.isEmpty(query)) {
                 loadPosts()
             } else {
@@ -82,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         dialog!!.show()
         url = when (nextToken) {
             DATA.EMPTY -> {
-                ("https://www.googleapis.com/blogger/v3/blogs/" + DATA.BLOG_ID + "/posts/search?q="
+                ("https://googleapis.com" + DATA.BLOG_ID + "/posts/search?q="
                         + query + "&key=" + DATA.BLOGGER_API)
             }
 
@@ -93,7 +96,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             else -> {
-                ("https://www.googleapis.com/blogger/v3/blogs/" + DATA.BLOG_ID + "/posts/search?q="
+                ("https://googleapis.com" + DATA.BLOG_ID + "/posts/search?q="
                         + query + "&pageToken=" + nextToken + "&key=" + DATA.BLOGGER_API)
             }
         }
@@ -103,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                 val jsonObject = response?.let { JSONObject(it) }
                 nextToken = try {
                     jsonObject!!.getString("nextPageToken")
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     Toast.makeText(context, "Reached end of page...", Toast.LENGTH_SHORT).show()
                     "end"
                 }
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                         val selfLink = jsonObject1.getString("selfLink")
                         val authorName =
                             jsonObject1.getJSONObject("author").getString("displayName")
-                        //String image = jsonObject1.getJSONObject("author").getString("image");
+
                         val post = Post(
                             DATA.EMPTY + authorName, DATA.EMPTY + content,
                             DATA.EMPTY + id, DATA.EMPTY + published,
@@ -133,7 +136,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 adapter = PostAdapter(context, posts!!)
-                binding!!.recyclerView.adapter = adapter
+                binding.recyclerView.adapter = adapter
                 dialog!!.dismiss()
             } catch (e: Exception) {
                 Toast.makeText(context, DATA.EMPTY + e.message, Toast.LENGTH_SHORT).show()
@@ -150,14 +153,14 @@ class MainActivity : AppCompatActivity() {
         isSearch = false
         dialog!!.show()
         url = if (nextToken == DATA.EMPTY) {
-            ("https://www.googleapis.com/blogger/v3/blogs/" + DATA.BLOG_ID + "/posts?maxResults="
+            ("https://googleapis.com" + DATA.BLOG_ID + "/posts?maxResults="
                     + DATA.MAX_POST_RESULTS + "&key=" + DATA.BLOGGER_API)
         } else if (nextToken == "end") {
             Toast.makeText(context, "No more posts...", Toast.LENGTH_SHORT).show()
             dialog!!.dismiss()
             return
         } else {
-            ("https://www.googleapis.com/blogger/v3/blogs/" + DATA.BLOG_ID + "/posts?maxResults="
+            ("https://googleapis.com" + DATA.BLOG_ID + "/posts?maxResults="
                     + DATA.MAX_POST_RESULTS + "&pageToken=" + nextToken + "&key=" + DATA.BLOGGER_API)
         }
         val stringRequest = StringRequest(Request.Method.GET, url, { response: String? ->
@@ -166,7 +169,7 @@ class MainActivity : AppCompatActivity() {
                 val jsonObject = response?.let { JSONObject(it) }
                 nextToken = try {
                     jsonObject!!.getString("nextPageToken")
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     Toast.makeText(context, "Reached end of page...", Toast.LENGTH_SHORT).show()
                     "end"
                 }
@@ -183,12 +186,12 @@ class MainActivity : AppCompatActivity() {
                         val selfLink = jsonObject1.getString("selfLink")
                         val authorName =
                             jsonObject1.getJSONObject("author").getString("displayName")
-                        val image = jsonObject1.getJSONObject("author").getString("image")
+
                         val post = Post(
                             DATA.EMPTY + authorName, DATA.EMPTY + content,
-                            DATA.EMPTY + id, DATA.EMPTY + published, DATA.EMPTY
-                                    + selfLink, DATA.EMPTY + title, DATA.EMPTY + updated,
-                            DATA.EMPTY + url
+                            DATA.EMPTY + id, DATA.EMPTY + published,
+                            DATA.EMPTY + selfLink, DATA.EMPTY + title,
+                            DATA.EMPTY + updated, DATA.EMPTY + url
                         )
                         posts!!.add(post)
                     } catch (e: Exception) {
@@ -196,7 +199,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 adapter = PostAdapter(context, posts!!)
-                binding!!.recyclerView.adapter = adapter
+                binding.recyclerView.adapter = adapter
                 dialog!!.dismiss()
             } catch (e: Exception) {
                 Toast.makeText(context, DATA.EMPTY + e.message, Toast.LENGTH_SHORT).show()
@@ -209,12 +212,8 @@ class MainActivity : AppCompatActivity() {
         requestQueue.add(stringRequest)
     }
 
-    override fun onBackPressed() {
-        if (DATA.searchStatus) {
-            binding!!.toolbar.toolbar.visibility = View.VISIBLE
-            binding!!.toolbar.toolbarSearch.visibility = View.GONE
-            DATA.searchStatus = false
-            binding!!.toolbar.textSearch.setText(DATA.EMPTY)
-        } else super.onBackPressed()
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }
