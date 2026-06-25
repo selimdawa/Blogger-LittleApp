@@ -7,8 +7,6 @@ class Comment {
     var published: String? = null
     var comment: String? = null
 
-    constructor()
-
     constructor(
         id: String?, name: String?, profileImage: String?, published: String?, comment: String?,
     ) {
