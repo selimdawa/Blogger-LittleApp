@@ -15,10 +15,10 @@ class SplashActivity : AppCompatActivity() {
     private var _binding: ActivitySplashBinding? = null
     private val binding get() = _binding!!
 
-    var context: Context = this@SplashActivity
+    private val context: Context = this@SplashActivity
 
-    var time_per_second = 2
-    var time_final = time_per_millis * time_per_second
+    private val timePerSecond = 2
+    private val timeFinal = TIME_PER_MILLIS * timePerSecond
 
     override fun onCreate(savedInstanceState: Bundle?) {
         THEME.setThemeOfApp(context)
@@ -26,7 +26,7 @@ class SplashActivity : AppCompatActivity() {
         _binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Handler(Looper.getMainLooper()).postDelayed({ launch() }, time_final.toLong())
+        Handler(Looper.getMainLooper()).postDelayed({ launch() }, timeFinal.toLong())
     }
 
     private fun launch() {
@@ -40,6 +40,6 @@ class SplashActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val time_per_millis = 1000
+        const val TIME_PER_MILLIS = 1000
     }
 }
