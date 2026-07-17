@@ -1,4 +1,4 @@
-package com.littleapp.blogger.Unit
+package com.littleapp.blogger.unit
 
 import android.content.Context
 import android.content.Intent
@@ -7,22 +7,24 @@ import com.bumptech.glide.Glide
 import com.littleapp.blogger.R
 
 object VOID {
-    fun Intent1(context: Context, c: Class<*>?) {
+    fun startActivity(context: Context, c: Class<*>?) {
         val intent = Intent(context, c)
         context.startActivity(intent)
     }
 
-    fun IntentExtra(context: Context, c: Class<*>?, key: String?, value: String?) {
+    fun startActivityWithExtra(context: Context, c: Class<*>?, key: String?, value: String?) {
         val intent = Intent(context, c)
         intent.putExtra(key, value)
         context.startActivity(intent)
     }
 
-    fun Glide(context: Context?, Url: String?, Image: ImageView) {
+    fun loadImage(context: Context?, url: String?, imageView: ImageView) {
         try {
-            Glide.with(context!!).load(Url).placeholder(R.color.image_profile).into(Image)
+            if (context != null) {
+                Glide.with(context).load(url).placeholder(R.color.image_profile).into(imageView)
+            }
         } catch (e: Exception) {
-            Image.setImageResource(R.color.image_profile)
+            imageView.setImageResource(R.color.image_profile)
         }
     }
 }

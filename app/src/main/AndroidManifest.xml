@@ -18,7 +18,7 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:supportsRtl">
         <activity
-            android:name=".Activity.SplashActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -28,16 +28,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Activity.MainActivity"
+            android:name=".activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activity.PageDetailsActivity"
+            android:name=".activity.PageDetailsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activity.PagesActivity"
+            android:name=".activity.PagesActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activity.PostDetailsActivity"
+            android:name=".activity.PostDetailsActivity"
             android:screenOrientation="portrait" />
     </application>
 

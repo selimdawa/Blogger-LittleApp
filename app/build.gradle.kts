@@ -49,7 +49,6 @@ dependencies {
     implementation(libs.material)
     //Image
     implementation(libs.glide)                          //Glide Image
-    implementation(libs.circleimageview)
     //Other's
     implementation(libs.jsoup)
     implementation(libs.volley)

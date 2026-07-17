@@ -1,4 +1,4 @@
-package com.littleapp.blogger.Activity
+package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
@@ -8,11 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.littleapp.blogger.Adapter.PagesAdapter
-import com.littleapp.blogger.Model.Page
+import com.littleapp.blogger.adapter.PagesAdapter
+import com.littleapp.blogger.model.Page
 import com.littleapp.blogger.R
-import com.littleapp.blogger.Unit.DATA
-import com.littleapp.blogger.Unit.THEME
+import com.littleapp.blogger.unit.DATA
+import com.littleapp.blogger.unit.THEME
 import com.littleapp.blogger.databinding.ActivityBloggerPagesBinding
 import org.json.JSONObject
 
@@ -43,7 +43,7 @@ class PagesActivity : AppCompatActivity() {
     private fun loadPages() {
         binding.progressBar.visibility = View.VISIBLE
 
-        val url = "https://googleapis.com{DATA.BLOG_ID}/pages?key=${DATA.BLOGGER_API}"
+        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/pages?key=${DATA.BLOGGER_API}"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             binding.progressBar.visibility = View.GONE

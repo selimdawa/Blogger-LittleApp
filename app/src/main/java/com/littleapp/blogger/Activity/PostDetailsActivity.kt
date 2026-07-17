@@ -1,4 +1,4 @@
-package com.littleapp.blogger.Activity
+package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
@@ -9,13 +9,13 @@ import com.android.volley.Request
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.littleapp.blogger.Adapter.CommentAdapter
-import com.littleapp.blogger.Adapter.LabelAdapter
-import com.littleapp.blogger.Model.Comment
-import com.littleapp.blogger.Model.Label
+import com.littleapp.blogger.adapter.CommentAdapter
+import com.littleapp.blogger.adapter.LabelAdapter
+import com.littleapp.blogger.model.Comment
+import com.littleapp.blogger.model.Label
 import com.littleapp.blogger.R
-import com.littleapp.blogger.Unit.DATA
-import com.littleapp.blogger.Unit.THEME
+import com.littleapp.blogger.unit.DATA
+import com.littleapp.blogger.unit.THEME
 import com.littleapp.blogger.databinding.ActivityPostDetailsBinding
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -54,7 +54,7 @@ class PostDetailsActivity : AppCompatActivity() {
     }
 
     private fun loadPostDetails() {
-        val url = "https://googleapis.com{DATA.BLOG_ID}/posts/$postId?key=${DATA.BLOGGER_API}"
+        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/$postId?key=${DATA.BLOGGER_API}"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             try {
@@ -98,7 +98,7 @@ class PostDetailsActivity : AppCompatActivity() {
     }
 
     private fun loadComments() {
-        val url = "https://googleapis.com{DATA.BLOG_ID}/posts/$postId/comments?key=${DATA.BLOGGER_API}"
+        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/$postId/comments?key=${DATA.BLOGGER_API}"
 
         val stringRequest = StringRequest(Request.Method.GET, url,
             { response -> onResponse(response) }) { _: VolleyError? -> }

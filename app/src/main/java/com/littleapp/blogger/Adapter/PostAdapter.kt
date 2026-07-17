@@ -1,14 +1,14 @@
-package com.littleapp.blogger.Adapter
+package com.littleapp.blogger.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.littleapp.blogger.Model.Post
+import com.littleapp.blogger.model.Post
 import com.littleapp.blogger.R
-import com.littleapp.blogger.Unit.CLASS
-import com.littleapp.blogger.Unit.DATA
-import com.littleapp.blogger.Unit.VOID
+import com.littleapp.blogger.unit.CLASS
+import com.littleapp.blogger.unit.DATA
+import com.littleapp.blogger.unit.VOID
 import com.littleapp.blogger.databinding.ItemBloggerBinding
 import org.jsoup.Jsoup
 import java.text.SimpleDateFormat
@@ -31,7 +31,7 @@ class PostAdapter(private val context: Context, var posts: ArrayList<Post>) :
 
         try {
             val image = document.select("img").attr("src")
-            VOID.Glide(context, image, holder.binding.image)
+            VOID.loadImage(context, image, holder.binding.image)
         } catch (_: Exception) {
             holder.binding.image.setImageResource(R.color.image_profile)
         }
@@ -52,7 +52,7 @@ class PostAdapter(private val context: Context, var posts: ArrayList<Post>) :
         }
 
         holder.itemView.setOnClickListener {
-            VOID.IntentExtra(context, CLASS.BLOGGER_POST_DETAILS, "postId", post.id)
+            VOID.startActivityWithExtra(context, CLASS.BLOGGER_POST_DETAILS, "postId", post.id)
         }
     }
 

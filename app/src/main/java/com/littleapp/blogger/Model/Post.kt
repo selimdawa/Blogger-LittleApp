@@ -1,4 +1,4 @@
-package com.littleapp.blogger.Model
+package com.littleapp.blogger.model
 
 data class Post(
     var authorName: String? = null,

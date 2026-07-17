@@ -1,6 +1,6 @@
-package com.littleapp.blogger.Unit
+package com.littleapp.blogger.unit
 
-import com.littleapp.blogger.Activity.*
+import com.littleapp.blogger.activity.*
 
 object CLASS {
     val MAIN: Class<*> = MainActivity::class.java

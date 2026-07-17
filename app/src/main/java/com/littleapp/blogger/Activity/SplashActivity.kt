@@ -1,13 +1,13 @@
-package com.littleapp.blogger.Activity
+package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.littleapp.blogger.Unit.CLASS
-import com.littleapp.blogger.Unit.THEME
-import com.littleapp.blogger.Unit.VOID
+import com.littleapp.blogger.unit.CLASS
+import com.littleapp.blogger.unit.THEME
+import com.littleapp.blogger.unit.VOID
 import com.littleapp.blogger.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
@@ -30,7 +30,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun launch() {
-        VOID.Intent1(context, CLASS.MAIN)
+        VOID.startActivity(context, CLASS.MAIN)
         finish()
     }
 

@@ -1,4 +1,4 @@
-package com.littleapp.blogger.Unit
+package com.littleapp.blogger.unit
 
 import android.content.Context
 import androidx.preference.PreferenceManager

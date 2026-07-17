@@ -1,4 +1,4 @@
-package com.littleapp.blogger.Activity
+package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
@@ -8,13 +8,13 @@ import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.littleapp.blogger.Adapter.PostAdapter
-import com.littleapp.blogger.Model.Post
+import com.littleapp.blogger.adapter.PostAdapter
+import com.littleapp.blogger.model.Post
 import com.littleapp.blogger.R
-import com.littleapp.blogger.Unit.CLASS
-import com.littleapp.blogger.Unit.DATA
-import com.littleapp.blogger.Unit.THEME
-import com.littleapp.blogger.Unit.VOID
+import com.littleapp.blogger.unit.CLASS
+import com.littleapp.blogger.unit.DATA
+import com.littleapp.blogger.unit.THEME
+import com.littleapp.blogger.unit.VOID
 import com.littleapp.blogger.databinding.ActivityMainBinding
 import org.json.JSONObject
 
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         with(binding.toolbar) {
             nameSpace.text = getString(R.string.blogger_name)
             close.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
-            pages.setOnClickListener { VOID.Intent1(context, CLASS.BLOGGER_PAGES) }
+            pages.setOnClickListener { VOID.startActivity(context, CLASS.BLOGGER_PAGES) }
             search.setOnClickListener {
                 toolbar.visibility = View.GONE
                 toolbarSearch.visibility = View.VISIBLE
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
         url = when (nextToken) {
             DATA.EMPTY -> {
-                "https://googleapis.com{DATA.BLOG_ID}/posts/search?q=$query&key=${DATA.BLOGGER_API}"
+                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/search?q=$query&key=${DATA.BLOGGER_API}"
             }
             "end" -> {
                 Toast.makeText(context, "No more posts...", Toast.LENGTH_SHORT).show()
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             else -> {
-                "https://googleapis.com{DATA.BLOG_ID}/posts/search?q=$query&pageToken=$nextToken&key=${DATA.BLOGGER_API}"
+                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/search?q=$query&pageToken=$nextToken&key=${DATA.BLOGGER_API}"
             }
         }
 
@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         url = when (nextToken) {
             DATA.EMPTY -> {
-                "https://googleapis.com{DATA.BLOG_ID}/posts?maxResults=${DATA.MAX_POST_RESULTS}&key=${DATA.BLOGGER_API}"
+                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts?maxResults=${DATA.MAX_POST_RESULTS}&key=${DATA.BLOGGER_API}"
             }
             "end" -> {
                 Toast.makeText(context, "No more posts...", Toast.LENGTH_SHORT).show()
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             else -> {
-                "https://googleapis.com{DATA.BLOG_ID}/posts?maxResults=${DATA.MAX_POST_RESULTS}&pageToken=$nextToken&key=${DATA.BLOGGER_API}"
+                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts?maxResults=${DATA.MAX_POST_RESULTS}&pageToken=$nextToken&key=${DATA.BLOGGER_API}"
             }
         }
 
