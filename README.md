@@ -1,9 +1,10 @@
-<h1 align="center">Blogger - Little App</h1>
+﻿<h1 align="center">Blogger - Little App</h1>
 
 <p align="center">
  <a><img alt="Min SDK" src="https://img.shields.io/badge/Min SDK-24-020290?logo=android&logoColor=white"/></a>
  <a><img alt="Target SDK" src="https://img.shields.io/badge/Target SDK-37-0EB265?logo=android&logoColor=0EB265"/></a>
  <a href="https://kotlinlang.org"><img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-2.4.0-blue?logo=kotlin&logoColor=white"/></a>
+  <a href="https://opensource.org/licenses/MIT"><img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square"/></a>
 </p>
 
 ## Day Mode
@@ -16,6 +17,13 @@ One | Two | Three
 --- | --- | --- | 
 ![](https://blogger.googleusercontent.com/img/a/AVvXsEhATYqnIORJ-drWliOcA1aMj6cPQ3CfDKzBh0Izum0od9vU8yp0XyZmcomF0OHSq9Vc7g7cIRhi0bpcqE6dgF26U_aAoDIy6w80OxEpxNFvaX2qLhykhbDsKmR3oNJE_xZLGkUF9nwaU5XD95P6PkZoi_dAylahAXMLGannc-vOcNvcypHMAzMq1hWO5w) | ![](https://blogger.googleusercontent.com/img/a/AVvXsEjhFFcqobslV94OulG7lQVCpxGl-ogGoqdCdeDwU0ln2KxDuhuQq7DFIjKV5suc5L_GKhLS5hwBFw6AwvXS6BBT9XVSA9lBLnun8ZX6Cmh_2KnF6NA3seUqmaVAyjbI9dzNbIvfYeuA5ljhMfxyHGJggQncEeFdPDAYGFrabrw6X2yA6FmbordqiEoU4w) | ![](https://blogger.googleusercontent.com/img/a/AVvXsEgRuRs5fCLowr7hiLX82d0R05q1-LpyDoP8nqA6gGCYqzB9ENVB_KqICgrYgtO8KdheI7rnxFpatBBlzatYwlMhAn-LYw7zRQ4n7axuaObEhEca0Qb56LtNIyR4TeeveBBUZt8mNmaGYz-OF4IdThxBAz5nlTg9j--CbxbWw1LdCRxmkgA_kLpr-1cwWQ) | 
 
-- Note ⛔ : Change the API and ID to your blog's data.
+- Note â›” : Change the API and ID to your blog's data.
 
 - [Simple Multi Apps - Kotlin](https://github.com/selimdawa/SimpleMultiAppsKotlin/)
+
+
+---
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
