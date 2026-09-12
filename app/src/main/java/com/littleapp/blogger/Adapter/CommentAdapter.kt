@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.littleapp.blogger.model.Comment
 import com.littleapp.blogger.R
-import com.littleapp.blogger.unit.DATA
-import com.littleapp.blogger.unit.VOID
+import com.littleapp.blogger.utils.DATA
+import com.littleapp.blogger.utils.loadImage
 import com.littleapp.blogger.databinding.ItemBloggerCommentBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -39,7 +39,7 @@ class CommentAdapter(private val context: Context, var comments: ArrayList<Comme
             comment.text = currentComment.comment ?: DATA.EMPTY
 
             try {
-                VOID.loadImage(context, currentComment.profileImage, image)
+                image.loadImage(currentComment.profileImage)
             } catch (_: Exception) {
                 image.setImageResource(R.drawable.ic_person)
             }

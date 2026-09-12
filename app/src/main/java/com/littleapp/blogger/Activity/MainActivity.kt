@@ -18,10 +18,9 @@ import com.littleapp.blogger.R
 import com.littleapp.blogger.adapter.PostAdapter
 import com.littleapp.blogger.databinding.ActivityMainBinding
 import com.littleapp.blogger.model.Post
-import com.littleapp.blogger.unit.CLASS
-import com.littleapp.blogger.unit.DATA
-import com.littleapp.blogger.unit.THEME
-import com.littleapp.blogger.unit.VOID
+import com.littleapp.blogger.utils.DATA
+import com.littleapp.blogger.utils.THEME
+import com.littleapp.blogger.utils.openActivity
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 
@@ -54,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         with(binding.toolbar) {
             nameSpace.text = getString(R.string.blogger_name)
             close.setOnClickListener { resetSearch() }
-            pages.setOnClickListener { VOID.startActivity(context, CLASS.BLOGGER_PAGES) }
+            pages.setOnClickListener { context.openActivity(PagesActivity::class.java) }
             search.setOnClickListener {
                 toolbar.visibility = View.GONE
                 toolbarSearch.visibility = View.VISIBLE
@@ -131,6 +130,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
+            if (_binding == null) return@StringRequest
             setLoading(false, isInitial)
             try {
                 val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
@@ -195,11 +195,12 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             }
         }) { error ->
+            if (_binding == null) return@StringRequest
             Toast.makeText(context, error.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             setLoading(false, isInitial)
         }
 
-        Volley.newRequestQueue(context).add(stringRequest)
+        Volley.newRequestQueue(applicationContext).add(stringRequest)
     }
 
     private fun loadPosts() {
@@ -220,6 +221,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
+            if (_binding == null) return@StringRequest
             setLoading(false, isInitial)
             try {
                 val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
@@ -283,14 +285,16 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             }
         }) { error ->
+            if (_binding == null) return@StringRequest
             Toast.makeText(context, error.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             setLoading(false, isInitial)
         }
 
-        Volley.newRequestQueue(context).add(stringRequest)
+        Volley.newRequestQueue(applicationContext).add(stringRequest)
     }
 
     private fun setLoading(isLoading: Boolean, isInitial: Boolean) {
+        val binding = _binding ?: return
         if (isLoading) {
             if (isInitial) {
                 binding.progressBar.visibility = View.VISIBLE

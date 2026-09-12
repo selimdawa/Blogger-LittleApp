@@ -1,4 +1,4 @@
-package com.littleapp.blogger.unit
+package com.littleapp.blogger.utils
 
 object DATA {
 

@@ -19,8 +19,8 @@ import com.littleapp.blogger.adapter.LabelAdapter
 import com.littleapp.blogger.model.Comment
 import com.littleapp.blogger.model.Label
 import com.littleapp.blogger.R
-import com.littleapp.blogger.unit.DATA
-import com.littleapp.blogger.unit.THEME
+import com.littleapp.blogger.utils.DATA
+import com.littleapp.blogger.utils.THEME
 import com.littleapp.blogger.databinding.ActivityPostDetailsBinding
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser

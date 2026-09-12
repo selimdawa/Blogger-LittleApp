@@ -14,8 +14,8 @@ import com.android.volley.toolbox.Volley
 import com.littleapp.blogger.adapter.PagesAdapter
 import com.littleapp.blogger.model.Page
 import com.littleapp.blogger.R
-import com.littleapp.blogger.unit.DATA
-import com.littleapp.blogger.unit.THEME
+import com.littleapp.blogger.utils.DATA
+import com.littleapp.blogger.utils.THEME
 import com.littleapp.blogger.databinding.ActivityBloggerPagesBinding
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser

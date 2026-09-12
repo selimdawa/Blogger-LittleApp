@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.littleapp.blogger.model.Label
-import com.littleapp.blogger.unit.DATA
+import com.littleapp.blogger.utils.DATA
 import com.littleapp.blogger.databinding.ItemBloggerLabelBinding
 
 class LabelAdapter(private val context: Context, var labels: ArrayList<Label>) :

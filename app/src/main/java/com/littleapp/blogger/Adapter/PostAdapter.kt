@@ -7,9 +7,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.littleapp.blogger.model.Post
 import com.littleapp.blogger.R
-import com.littleapp.blogger.unit.CLASS
-import com.littleapp.blogger.unit.DATA
-import com.littleapp.blogger.unit.VOID
+import com.littleapp.blogger.activity.PostDetailsActivity
+import com.littleapp.blogger.utils.DATA
+import com.littleapp.blogger.utils.loadImage
+import com.littleapp.blogger.utils.openActivity
 import com.littleapp.blogger.databinding.ItemBloggerBinding
 import org.jsoup.Jsoup
 import java.text.SimpleDateFormat
@@ -34,7 +35,7 @@ class PostAdapter(private val context: Context, initialPosts: List<Post>) :
 
         try {
             val image = document.select("img").attr("src")
-            VOID.loadImage(context, image, holder.binding.image)
+            holder.binding.image.loadImage(image)
         } catch (_: Exception) {
             holder.binding.image.setImageResource(R.color.image_profile)
         }
@@ -55,7 +56,9 @@ class PostAdapter(private val context: Context, initialPosts: List<Post>) :
         }
 
         holder.itemView.setOnClickListener {
-            VOID.startActivityWithExtra(context, CLASS.BLOGGER_POST_DETAILS, "postId", post.id)
+            context.openActivity(PostDetailsActivity::class.java) {
+                putExtra("postId", post.id)
+            }
         }
     }
 

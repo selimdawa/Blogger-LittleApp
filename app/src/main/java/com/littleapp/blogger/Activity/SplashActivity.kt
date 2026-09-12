@@ -8,9 +8,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.littleapp.blogger.unit.CLASS
-import com.littleapp.blogger.unit.THEME
-import com.littleapp.blogger.unit.VOID
+import com.littleapp.blogger.utils.THEME
+import com.littleapp.blogger.utils.openActivity
 import com.littleapp.blogger.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
@@ -40,7 +39,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun launch() {
-        VOID.startActivity(context, CLASS.MAIN)
+        context.openActivity(MainActivity::class.java)
         finish()
     }
 

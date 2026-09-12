@@ -6,9 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.littleapp.blogger.model.Page
 import com.littleapp.blogger.R
-import com.littleapp.blogger.unit.CLASS
-import com.littleapp.blogger.unit.DATA
-import com.littleapp.blogger.unit.VOID
+import com.littleapp.blogger.activity.PageDetailsActivity
+import com.littleapp.blogger.utils.DATA
+import com.littleapp.blogger.utils.loadImage
+import com.littleapp.blogger.utils.openActivity
 import com.littleapp.blogger.databinding.ItemBloggerBinding
 import org.jsoup.Jsoup
 import java.text.SimpleDateFormat
@@ -33,7 +34,7 @@ class PagesAdapter(private val context: Context, var pages: ArrayList<Page>) :
             val elements = document.select("img")
             if (elements.isNotEmpty()) {
                 val image = elements[0].attr("src")
-                VOID.loadImage(context, image, holder.binding.image)
+                holder.binding.image.loadImage(image)
             } else {
                 holder.binding.image.setImageResource(R.color.image_profile)
             }
@@ -57,7 +58,9 @@ class PagesAdapter(private val context: Context, var pages: ArrayList<Page>) :
         }
 
         holder.itemView.setOnClickListener {
-            VOID.startActivityWithExtra(context, CLASS.BLOGGER_PAGES_DETAILS, "pageId", page.id)
+            context.openActivity(PageDetailsActivity::class.java) {
+                putExtra("pageId", page.id)
+            }
         }
     }
 
