@@ -17,7 +17,8 @@ import com.littleapp.blogger.R
 import com.littleapp.blogger.unit.DATA
 import com.littleapp.blogger.unit.THEME
 import com.littleapp.blogger.databinding.ActivityBloggerPagesBinding
-import org.json.JSONObject
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 
 class PagesActivity : AppCompatActivity() {
 
@@ -53,34 +54,33 @@ class PagesActivity : AppCompatActivity() {
     private fun loadPages() {
         binding.progressBar.visibility = View.VISIBLE
 
-        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/pages?key=${DATA.BLOGGER_API}"
+        val url = DATA.PAGES_FEED_URL
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             binding.progressBar.visibility = View.GONE
             try {
-                val jsonObject = JSONObject(response ?: DATA.EMPTY)
-                val jsonArray = jsonObject.getJSONArray("items")
+                val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
+                val entries = doc.select("entry")
                 pages.clear()
 
-                for (i in 0 until jsonArray.length()) {
+                for (entry in entries) {
                     try {
-                        val jsonObject1 = jsonArray.getJSONObject(i)
-                        val id = jsonObject1.getString("id")
-                        val title = jsonObject1.getString("title")
-                        val content = jsonObject1.getString("content")
-                        val published = jsonObject1.getString("published")
-                        val updated = jsonObject1.getString("updated")
-                        val url_ = jsonObject1.getString("url")
-                        val selfLink = jsonObject1.getString("selfLink")
-                        val displayName = jsonObject1.getJSONObject("author").getString("displayName")
+                        val id = entry.selectFirst("id")?.text()?.split("-")?.last() ?: ""
+                        val title = entry.selectFirst("title")?.text() ?: ""
+                        val content = entry.selectFirst("content")?.text() ?: ""
+                        val published = entry.selectFirst("published")?.text() ?: ""
+                        val updated = entry.selectFirst("updated")?.text() ?: ""
+                        val urlPath = entry.selectFirst("link[rel=alternate]")?.attr("href") ?: ""
+                        val selfLink = entry.selectFirst("link[rel=self]")?.attr("href") ?: ""
+                        val authorName = entry.select("author name").first()?.text() ?: DATA.UNKNOWN
 
                         val page = Page(
-                            displayName, content, id, published,
-                            selfLink, title, updated, url_
+                            authorName, content, id, published,
+                            selfLink, title, updated, urlPath
                         )
                         pages.add(page)
                     } catch (e: Exception) {
-                        Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
+                        e.printStackTrace()
                     }
                 }
                 adapter = PagesAdapter(context, pages)

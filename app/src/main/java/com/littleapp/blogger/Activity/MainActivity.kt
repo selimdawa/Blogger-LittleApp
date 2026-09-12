@@ -2,8 +2,11 @@ package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -11,15 +14,16 @@ import androidx.core.view.WindowInsetsCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.littleapp.blogger.adapter.PostAdapter
-import com.littleapp.blogger.model.Post
 import com.littleapp.blogger.R
+import com.littleapp.blogger.adapter.PostAdapter
+import com.littleapp.blogger.databinding.ActivityMainBinding
+import com.littleapp.blogger.model.Post
 import com.littleapp.blogger.unit.CLASS
 import com.littleapp.blogger.unit.DATA
 import com.littleapp.blogger.unit.THEME
 import com.littleapp.blogger.unit.VOID
-import com.littleapp.blogger.databinding.ActivityMainBinding
-import org.json.JSONObject
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val binding get() = _binding!!
 
     private var url = DATA.EMPTY
-    private var nextToken = DATA.EMPTY
+    private var nextToken = "1"
     private var isSearch = false
     private val posts = ArrayList<Post>()
     private var adapter: PostAdapter? = null
@@ -49,25 +53,43 @@ class MainActivity : AppCompatActivity() {
 
         with(binding.toolbar) {
             nameSpace.text = getString(R.string.blogger_name)
-            close.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+            close.setOnClickListener { resetSearch() }
             pages.setOnClickListener { VOID.startActivity(context, CLASS.BLOGGER_PAGES) }
             search.setOnClickListener {
                 toolbar.visibility = View.GONE
                 toolbarSearch.visibility = View.VISIBLE
                 DATA.searchStatus = true
             }
-            postSearch.setOnClickListener {
-                nextToken = DATA.EMPTY
-                url = DATA.EMPTY
-                posts.clear()
-                val query = textSearch.text.toString().trim()
-                if (query.isEmpty()) {
-                    loadPosts()
+            postSearch.visibility = View.GONE
+
+            textSearch.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?, start: Int, count: Int, after: Int
+                ) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    val query = s.toString().trim()
+                    adapter?.filter(query)
+                    val isEmpty = adapter?.itemCount == 0
+                    binding.noResultsText.visibility = if (isEmpty && query.isNotEmpty()) View.VISIBLE else View.GONE
+                    binding.loadMoreLayout.visibility = if (query.isEmpty() && nextToken != DATA.END) View.VISIBLE else View.GONE
+                }
+
+                override fun afterTextChanged(s: Editable?) {}
+            })
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (DATA.searchStatus) {
+                    resetSearch()
                 } else {
-                    searchPosts(query)
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
                 }
             }
-        }
+        })
 
         loadPosts()
 
@@ -81,124 +103,212 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun resetSearch() {
+        binding.toolbar.toolbar.visibility = View.VISIBLE
+        binding.toolbar.toolbarSearch.visibility = View.GONE
+        binding.toolbar.textSearch.setText("")
+        DATA.searchStatus = false
+        adapter?.filter("")
+        binding.noResultsText.visibility = View.GONE
+        binding.loadMoreLayout.visibility = if (nextToken == DATA.END) View.GONE else View.VISIBLE
+    }
+
     private fun searchPosts(query: String) {
+        val isInitial = nextToken == "1" || nextToken == DATA.EMPTY
         isSearch = true
-        binding.progressBar.visibility = View.VISIBLE
+        setLoading(true, isInitial)
 
         url = when (nextToken) {
-            DATA.EMPTY -> {
-                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/search?q=$query&key=${DATA.BLOGGER_API}"
-            }
-            "end" -> {
+            DATA.END -> {
                 Toast.makeText(context, "No more posts...", Toast.LENGTH_SHORT).show()
-                binding.progressBar.visibility = View.GONE
+                setLoading(false, isInitial)
                 return
             }
+
             else -> {
-                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/search?q=$query&pageToken=$nextToken&key=${DATA.BLOGGER_API}"
+                "${DATA.FEED_URL}?q=$query&start-index=$nextToken&max-results=${DATA.MAX_POST_RESULTS}"
             }
         }
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            binding.progressBar.visibility = View.GONE
+            setLoading(false, isInitial)
             try {
-                val jsonObject = JSONObject(response ?: DATA.EMPTY)
-                nextToken = try {
-                    jsonObject.getString("nextPageToken")
-                } catch (_: Exception) {
-                    Toast.makeText(context, "Reached end of page...", Toast.LENGTH_SHORT).show()
-                    "end"
+                val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
+                val entries = doc.select("entry")
+
+                if (entries.isEmpty()) {
+                    Toast.makeText(context, "No posts found...", Toast.LENGTH_SHORT).show()
+                    nextToken = DATA.END
+                    setLoading(false, isInitial)
+                    return@StringRequest
                 }
 
-                val jsonArray = jsonObject.getJSONArray("items")
-                for (i in 0 until jsonArray.length()) {
+                for (entry in entries) {
                     try {
-                        val jsonObject1 = jsonArray.getJSONObject(i)
-                        val id = jsonObject1.getString("id")
-                        val title = jsonObject1.getString("title")
-                        val content = jsonObject1.getString("content")
-                        val published = jsonObject1.getString("published")
-                        val updated = jsonObject1.getString("updated")
-                        val urlPath = jsonObject1.getString("url")
-                        val selfLink = jsonObject1.getString("selfLink")
-                        val authorName = jsonObject1.getJSONObject("author").getString("displayName")
+                        val id = entry.selectFirst("id")?.text()?.split("-")?.last() ?: ""
+                        val title = entry.selectFirst("title")?.text() ?: ""
+                        val content = entry.selectFirst("content")?.text() ?: ""
+                        val published = entry.selectFirst("published")?.text() ?: ""
+                        val updated = entry.selectFirst("updated")?.text() ?: ""
+                        val urlPath = entry.selectFirst("link[rel=alternate]")?.attr("href") ?: ""
+                        val selfLink = entry.selectFirst("link[rel=self]")?.attr("href") ?: ""
+                        val authorName = entry.select("author name").first()?.text() ?: DATA.UNKNOWN
 
-                        posts.add(Post(authorName, content, id, published, selfLink, title, updated, urlPath))
+                        posts.add(
+                            Post(
+                                authorName,
+                                content,
+                                id,
+                                published,
+                                selfLink,
+                                title,
+                                updated,
+                                urlPath
+                            )
+                        )
                     } catch (e: Exception) {
-                        Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
+                        e.printStackTrace()
                     }
                 }
-                adapter = PostAdapter(context, posts)
-                binding.recyclerView.adapter = adapter
+
+                nextToken = if (entries.size < DATA.MAX_POST_RESULTS.toInt()) {
+                    DATA.END
+                } else {
+                    (nextToken.toInt() + entries.size).toString()
+                }
+
+                if (adapter == null) {
+                    adapter = PostAdapter(context, ArrayList(posts))
+                    binding.recyclerView.adapter = adapter
+                } else {
+                    adapter?.updateList(ArrayList(posts))
+                }
+
+                val queryText = binding.toolbar.textSearch.text.toString().trim()
+                if (queryText.isNotEmpty()) {
+                    adapter?.filter(queryText)
+                }
+
+                setLoading(false, isInitial)
+                binding.recyclerView.requestLayout()
             } catch (e: Exception) {
                 Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             }
         }) { error ->
             Toast.makeText(context, error.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
-            binding.progressBar.visibility = View.GONE
+            setLoading(false, isInitial)
         }
 
         Volley.newRequestQueue(context).add(stringRequest)
     }
 
     private fun loadPosts() {
+        val isInitial = nextToken == "1" || nextToken == DATA.EMPTY
         isSearch = false
-        binding.progressBar.visibility = View.VISIBLE
+        setLoading(true, isInitial)
 
         url = when (nextToken) {
-            DATA.EMPTY -> {
-                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts?maxResults=${DATA.MAX_POST_RESULTS}&key=${DATA.BLOGGER_API}"
-            }
-            "end" -> {
+            DATA.END -> {
                 Toast.makeText(context, "No more posts...", Toast.LENGTH_SHORT).show()
-                binding.progressBar.visibility = View.GONE
+                setLoading(false, isInitial)
                 return
             }
+
             else -> {
-                "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts?maxResults=${DATA.MAX_POST_RESULTS}&pageToken=$nextToken&key=${DATA.BLOGGER_API}"
+                "${DATA.FEED_URL}?start-index=$nextToken&max-results=${DATA.MAX_POST_RESULTS}"
             }
         }
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            binding.progressBar.visibility = View.GONE
+            setLoading(false, isInitial)
             try {
-                val jsonObject = JSONObject(response ?: DATA.EMPTY)
-                nextToken = try {
-                    jsonObject.getString("nextPageToken")
-                } catch (_: Exception) {
-                    Toast.makeText(context, "Reached end of page...", Toast.LENGTH_SHORT).show()
-                    "end"
+                val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
+                val entries = doc.select("entry")
+
+                if (entries.isEmpty()) {
+                    nextToken = DATA.END
+                    setLoading(false, isInitial)
+                    return@StringRequest
                 }
 
-                val jsonArray = jsonObject.getJSONArray("items")
-                for (i in 0 until jsonArray.length()) {
+                for (entry in entries) {
                     try {
-                        val jsonObject1 = jsonArray.getJSONObject(i)
-                        val id = jsonObject1.getString("id")
-                        val title = jsonObject1.getString("title")
-                        val content = jsonObject1.getString("content")
-                        val published = jsonObject1.getString("published")
-                        val updated = jsonObject1.getString("updated")
-                        val urlPath = jsonObject1.getString("url")
-                        val selfLink = jsonObject1.getString("selfLink")
-                        val authorName = jsonObject1.getJSONObject("author").getString("displayName")
+                        val id = entry.selectFirst("id")?.text()?.split("-")?.last() ?: ""
+                        val title = entry.selectFirst("title")?.text() ?: ""
+                        val content = entry.selectFirst("content")?.text() ?: ""
+                        val published = entry.selectFirst("published")?.text() ?: ""
+                        val updated = entry.selectFirst("updated")?.text() ?: ""
+                        val urlPath = entry.selectFirst("link[rel=alternate]")?.attr("href") ?: ""
+                        val selfLink = entry.selectFirst("link[rel=self]")?.attr("href") ?: ""
+                        val authorName = entry.select("author name").first()?.text() ?: DATA.UNKNOWN
 
-                        posts.add(Post(authorName, content, id, published, selfLink, title, updated, urlPath))
+                        posts.add(
+                            Post(
+                                authorName,
+                                content,
+                                id,
+                                published,
+                                selfLink,
+                                title,
+                                updated,
+                                urlPath
+                            )
+                        )
                     } catch (e: Exception) {
-                        Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
+                        e.printStackTrace()
                     }
                 }
-                adapter = PostAdapter(context, posts)
-                binding.recyclerView.adapter = adapter
+
+                nextToken = if (entries.size < DATA.MAX_POST_RESULTS.toInt()) {
+                    DATA.END
+                } else {
+                    (nextToken.toInt() + entries.size).toString()
+                }
+
+                if (adapter == null) {
+                    adapter = PostAdapter(context, ArrayList(posts))
+                    binding.recyclerView.adapter = adapter
+                } else {
+                    adapter?.updateList(ArrayList(posts))
+                }
+
+                val queryText = binding.toolbar.textSearch.text.toString().trim()
+                if (queryText.isNotEmpty()) {
+                    adapter?.filter(queryText)
+                }
+
+                setLoading(false, isInitial)
+                binding.recyclerView.requestLayout()
             } catch (e: Exception) {
                 Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             }
         }) { error ->
             Toast.makeText(context, error.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
-            binding.progressBar.visibility = View.GONE
+            setLoading(false, isInitial)
         }
 
         Volley.newRequestQueue(context).add(stringRequest)
+    }
+
+    private fun setLoading(isLoading: Boolean, isInitial: Boolean) {
+        if (isLoading) {
+            if (isInitial) {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.loadMoreLayout.visibility = View.GONE
+            } else {
+                binding.loadMore.visibility = View.GONE
+                binding.loadMoreProgress.visibility = View.VISIBLE
+            }
+        } else {
+            binding.progressBar.visibility = View.GONE
+            binding.loadMoreProgress.visibility = View.GONE
+            if (nextToken == DATA.END) {
+                binding.loadMoreLayout.visibility = View.GONE
+            } else {
+                binding.loadMoreLayout.visibility = View.VISIBLE
+                binding.loadMore.visibility = View.VISIBLE
+            }
+        }
     }
 
     override fun onDestroy() {

@@ -3,6 +3,7 @@ package com.littleapp.blogger.adapter
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.littleapp.blogger.model.Post
 import com.littleapp.blogger.R
@@ -14,9 +15,11 @@ import org.jsoup.Jsoup
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class PostAdapter(private val context: Context, var posts: ArrayList<Post>) :
+class PostAdapter(private val context: Context, initialPosts: List<Post>) :
     RecyclerView.Adapter<PostAdapter.ViewHolder>() {
 
+    private var posts: List<Post> = ArrayList(initialPosts)
+    private var originalPosts: List<Post> = ArrayList(initialPosts)
     private val inputDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
     private val outputDateFormat = SimpleDateFormat("dd/MM/yyyy K:mm a", Locale.ENGLISH)
 
@@ -57,6 +60,44 @@ class PostAdapter(private val context: Context, var posts: ArrayList<Post>) :
     }
 
     override fun getItemCount(): Int = posts.size
+
+    fun filter(text: String) {
+        val filteredList = if (text.isEmpty()) {
+            originalPosts
+        } else {
+            val result = ArrayList<Post>()
+            for (post in originalPosts) {
+                if (post.title?.lowercase(Locale.ROOT)?.contains(text.lowercase(Locale.ROOT)) == true) {
+                    result.add(post)
+                }
+            }
+            result
+        }
+        val diffResult = DiffUtil.calculateDiff(PostDiffCallback(posts, filteredList))
+        posts = ArrayList(filteredList)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun updateList(newList: List<Post>) {
+        val diffResult = DiffUtil.calculateDiff(PostDiffCallback(posts, newList))
+        posts = ArrayList(newList)
+        originalPosts = ArrayList(newList)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class PostDiffCallback(
+        private val oldList: List<Post>,
+        private val newList: List<Post>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].id == newList[newItemPosition].id
+        }
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
+    }
 
     class ViewHolder(val binding: ItemBloggerBinding) : RecyclerView.ViewHolder(binding.root)
 }

@@ -2,6 +2,8 @@ package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
+import android.util.TypedValue
+import androidx.appcompat.R.attr.colorError
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -15,7 +17,8 @@ import com.littleapp.blogger.R
 import com.littleapp.blogger.unit.DATA
 import com.littleapp.blogger.unit.THEME
 import com.littleapp.blogger.databinding.ActivityPageDetailsBinding
-import org.json.JSONObject
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -55,26 +58,38 @@ class PageDetailsActivity : AppCompatActivity() {
     }
 
     private fun loadPageDetails() {
-        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/pages/$pageId?key=${DATA.BLOGGER_API}"
+        val url = "https://www.blogger.com/feeds/${DATA.BLOG_ID}/pages/default/$pageId"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             try {
-                val jsonObject = JSONObject(response ?: DATA.EMPTY)
-                val title = jsonObject.getString("title")
-                val content = jsonObject.getString("content")
-                val published = jsonObject.getString("published")
-                val displayName = jsonObject.getJSONObject("author").getString("displayName")
+                val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
+                val entry = doc.selectFirst("entry")
 
-                val formattedDate = try {
-                    val date = inputDateFormat.parse(published)
-                    if (date != null) outputDateFormat.format(date) else published
-                } catch (_: Exception) {
-                    published
+                if (entry != null) {
+                    val title = entry.selectFirst("title")?.text() ?: ""
+                    val content = entry.selectFirst("content")?.text() ?: ""
+                    val published = entry.selectFirst("published")?.text() ?: ""
+                    val displayName = entry.select("author name").first()?.text() ?: DATA.UNKNOWN
+
+                    val formattedDate = try {
+                        val date = inputDateFormat.parse(published)
+                        if (date != null) outputDateFormat.format(date) else published
+                    } catch (_: Exception) {
+                        published
+                    }
+
+                    binding.title.text = title
+                    binding.publishInfo.text = context.getString(R.string.publish_info, displayName, formattedDate)
+
+                    val typedValue = TypedValue()
+                    theme.resolveAttribute(colorError, typedValue, true)
+                    val hexColor = String.format("#%06X", 0xFFFFFF and typedValue.data)
+                    
+                    val styledContent = "<html><head><style>body { color: $hexColor; font-family: sans-serif; line-height: 1.6; } a { color: #2196F3; }</style></head><body>$content</body></html>"
+                    
+                    binding.webView.setBackgroundColor(0)
+                    binding.webView.loadDataWithBaseURL(null, styledContent, "text/html", "UTF-8", null)
                 }
-
-                binding.title.text = title
-                binding.publishInfo.text = context.getString(R.string.publish_info, displayName, formattedDate)
-                binding.webView.loadDataWithBaseURL(null, content, "text/html", "UTF-8", null)
             } catch (e: Exception) {
                 Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             }

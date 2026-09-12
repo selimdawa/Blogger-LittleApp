@@ -2,6 +2,8 @@ package com.littleapp.blogger.activity
 
 import android.content.Context
 import android.os.Bundle
+import android.util.TypedValue
+import androidx.appcompat.R.attr.colorError
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -20,7 +22,8 @@ import com.littleapp.blogger.R
 import com.littleapp.blogger.unit.DATA
 import com.littleapp.blogger.unit.THEME
 import com.littleapp.blogger.databinding.ActivityPostDetailsBinding
-import org.json.JSONObject
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -64,39 +67,54 @@ class PostDetailsActivity : AppCompatActivity() {
     }
 
     private fun loadPostDetails() {
-        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/$postId?key=${DATA.BLOGGER_API}"
+        val url = "https://www.blogger.com/feeds/${DATA.BLOG_ID}/posts/default/$postId"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             try {
-                val jsonObject = JSONObject(response ?: DATA.EMPTY)
-                val title = jsonObject.getString("title")
-                val content = jsonObject.getString("content")
-                val published = jsonObject.getString("published")
-                val displayName = jsonObject.getJSONObject("author").getString("displayName")
+                val doc = Jsoup.parse(response ?: DATA.EMPTY, "", Parser.xmlParser())
+                val entry = doc.selectFirst("entry")
 
-                val formattedDate = try {
-                    val date = inputDateFormat.parse(published)
-                    if (date != null) outputDateFormat.format(date) else published
-                } catch (_: Exception) {
-                    published
-                }
+                if (entry != null) {
+                    val title = entry.selectFirst("title")?.text() ?: ""
+                    val content = entry.selectFirst("content")?.text() ?: ""
+                    val published = entry.selectFirst("published")?.text() ?: ""
+                    val displayName = entry.select("author name").first()?.text() ?: DATA.UNKNOWN
 
-                binding.title.text = title
-                binding.publishInfo.text = context.getString(R.string.publish_info, displayName, formattedDate)
-                binding.webView.loadDataWithBaseURL(null, content, "text/html", "UTF-8", null)
-
-                try {
-                    list.clear()
-                    val jsonArray = jsonObject.getJSONArray("labels")
-                    for (i in 0 until jsonArray.length()) {
-                        list.add(Label(jsonArray.getString(i)))
+                    val formattedDate = try {
+                        val date = inputDateFormat.parse(published)
+                        if (date != null) outputDateFormat.format(date) else published
+                    } catch (_: Exception) {
+                        published
                     }
-                    adapter = LabelAdapter(context, list)
-                    binding.recyclerLabels.adapter = adapter
-                } catch (_: Exception) {
-                }
 
-                loadComments()
+                    binding.title.text = title
+                    binding.publishInfo.text = context.getString(R.string.publish_info, displayName, formattedDate)
+                    
+                    val typedValue = TypedValue()
+                    theme.resolveAttribute(colorError, typedValue, true)
+                    val hexColor = String.format("#%06X", 0xFFFFFF and typedValue.data)
+
+                    val styledContent = "<html><head><style>body { color: $hexColor; font-family: sans-serif; line-height: 1.6; padding: 10px; } a { color: #2196F3; } img { max-width: 100%; height: auto; }</style></head><body>$content</body></html>"
+
+                    binding.webView.setBackgroundColor(0)
+                    binding.webView.loadDataWithBaseURL(null, styledContent, "text/html", "UTF-8", null)
+
+                    try {
+                        list.clear()
+                        val categories = entry.select("category")
+                        for (category in categories) {
+                            val term = category.attr("term")
+                            if (term.isNotEmpty()) {
+                                list.add(Label(term))
+                            }
+                        }
+                        adapter = LabelAdapter(context, list)
+                        binding.recyclerLabels.adapter = adapter
+                    } catch (_: Exception) {
+                    }
+
+                    loadComments()
+                }
             } catch (e: Exception) {
                 Toast.makeText(context, e.message ?: DATA.EMPTY, Toast.LENGTH_SHORT).show()
             }
@@ -108,7 +126,7 @@ class PostDetailsActivity : AppCompatActivity() {
     }
 
     private fun loadComments() {
-        val url = "https://www.googleapis.com/blogger/v3/blogs/${DATA.BLOG_ID}/posts/$postId/comments?key=${DATA.BLOGGER_API}"
+        val url = "https://www.blogger.com/feeds/${DATA.BLOG_ID}/$postId/comments/default"
 
         val stringRequest = StringRequest(Request.Method.GET, url,
             { response -> onResponse(response) }) { _: VolleyError? -> }
@@ -119,15 +137,19 @@ class PostDetailsActivity : AppCompatActivity() {
     private fun onResponse(response: String) {
         comments.clear()
         try {
-            val jsonObject = JSONObject(response)
-            val jsonArray = jsonObject.getJSONArray("items")
-            for (i in 0 until jsonArray.length()) {
-                val jsonObject1 = jsonArray.getJSONObject(i)
-                val id = jsonObject1.getString("id")
-                val published = jsonObject1.getString("published")
-                val content = jsonObject1.getString("content")
-                val displayName = jsonObject1.getJSONObject("author").getString("displayName")
-                val profileImage = "https:${jsonObject1.getJSONObject("author").getJSONObject("image").getString("url")}"
+            val doc = Jsoup.parse(response, "", Parser.xmlParser())
+            val entries = doc.select("entry")
+
+            for (entry in entries) {
+                val id = entry.selectFirst("id")?.text()?.split("-")?.last() ?: ""
+                val published = entry.selectFirst("published")?.text() ?: ""
+                val content = entry.selectFirst("content")?.text() ?: ""
+                val displayName = entry.select("author name").first()?.text() ?: DATA.UNKNOWN
+                val profileImage = entry.select("author gd|image").attr("src").ifEmpty {
+                    entry.select("author link[rel=image]").attr("href").ifEmpty {
+                        "https://www.blogger.com/img/blogger-logotype-color-black-caps.png"
+                    }
+                }
 
                 val comment = Comment(id, displayName, profileImage, published, content)
                 comments.add(comment)

@@ -2,13 +2,12 @@ package com.littleapp.blogger.unit
 
 object DATA {
 
-    //Other
     const val EMPTY = ""
-    const val SPACE = " "
+    const val END = "end"
     const val UNKNOWN = "Unknown"
-
     var searchStatus = false
-    const val BLOGGER_API = "AIzaSyDAq5n9ShBngyuSoWrFBnuena94qPm2Gk0" // API your blogger
-    const val BLOG_ID = "5758825298436553050" // ID for your blogger
+    const val BLOG_ID = "2399953" // ID for your blogger (Blogger Buzz Official)
     const val MAX_POST_RESULTS = "10" // Max post display
+    const val FEED_URL = "https://www.blogger.com/feeds/$BLOG_ID/posts/default"
+    const val PAGES_FEED_URL = "https://www.blogger.com/feeds/$BLOG_ID/pages/default"
 }
