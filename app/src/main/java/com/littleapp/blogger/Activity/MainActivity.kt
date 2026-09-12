@@ -53,11 +53,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUI() {
         with(binding.toolbar) {
+            val toolbarNormal = root.getChildAt(0)
+            val toolbarSearch = root.getChildAt(1)
+
             nameSpace.text = getString(R.string.blogger_name)
             close.setOnClickListener { resetSearch() }
             pages.setOnClickListener { context.openActivity(PagesActivity::class.java) }
             search.setOnClickListener {
-                toolbar.visibility = View.GONE
+                toolbarNormal.visibility = View.GONE
                 toolbarSearch.visibility = View.VISIBLE
                 DATA.searchStatus = true
             }
@@ -131,8 +134,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetSearch() {
-        binding.toolbar.toolbar.visibility = View.VISIBLE
-        binding.toolbar.toolbarSearch.visibility = View.GONE
+        binding.toolbar.root.getChildAt(0).visibility = View.VISIBLE
+        binding.toolbar.root.getChildAt(1).visibility = View.GONE
         binding.toolbar.textSearch.setText("")
         DATA.searchStatus = false
         adapter?.filter("")
