@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="45sp"
     android:layout_margin="10sp"
-    app:cardCornerRadius="6sp">
+    app:cardCornerRadius="6sp"
+    app:strokeWidth="0dp">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:layout_width="match_parent"
